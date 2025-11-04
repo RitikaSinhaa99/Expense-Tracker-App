@@ -1,0 +1,87 @@
+/* 🌈 Global Theme — Morph Style + American Typewriter */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  min-height: 100vh;
+  font-family: 'American Typewriter', 'Inter', sans-serif;
+  background: linear-gradient(145deg, #cbb6ff, #f1e4ff);
+  background-attachment: fixed;
+  color: #2b1842;
+  transition: all 0.4s ease-in-out;
+}
+
+/* Make sure React root and App fill the viewport */
+#root, .App {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+/* 🪩 Morph (neumorphic) container look */
+.card, .container, .modal-content {
+  background: rgba(255, 255, 255, 0.6) !important;
+  backdrop-filter: blur(12px);
+  border-radius: 18px;
+  border: none;
+  box-shadow: 8px 8px 20px rgba(0, 0, 0, 0.1),
+              -8px -8px 20px rgba(255, 255, 255, 0.7);
+  transition: all 0.3s ease-in-out;
+}
+
+.card:hover, .container:hover {
+  transform: translateY(-3px);
+}
+
+/* 💜 Buttons — aesthetic purple look */
+.btn, button {
+  background: linear-gradient(135deg, #7b2ff7, #f107a3);
+  border: none;
+  color: white !important;
+  border-radius: 12px !important;
+  padding: 10px 18px;
+  transition: all 0.3s ease-in-out;
+  font-weight: 600;
+}
+
+.btn:hover, button:hover {
+  background: linear-gradient(135deg, #9f4fff, #ff4fc9);
+  box-shadow: 0 0 15px rgba(155, 50, 255, 0.4);
+}
+
+/* 🧊 Input fields — soft glass look */
+input, select, textarea {
+  background: rgba(255, 255, 255, 0.7) !important;
+  border: none !important;
+  border-radius: 10px !important;
+  box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.1),
+              inset -3px -3px 6px rgba(255, 255, 255, 0.8);
+  padding: 10px;
+  font-size: 15px;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(123, 47, 247, 0.3);
+}
+
+/* Override Bootstrap's white background */
+.bg-white, .bg-light, .navbar, .modal-content {
+  background: transparent !important;
+}
+
+/* 🌃 Scrollbar aesthetic */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #b18cff;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #925fff;
+}
