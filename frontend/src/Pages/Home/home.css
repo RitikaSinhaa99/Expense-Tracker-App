@@ -27,27 +27,39 @@ body {
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
 }
-
 .data-table {
   border-collapse: collapse;
   width: 100%;
   background: #1c1c1c;
-  color: #f1f1f1;
+  color: #ffffff; /* brighter text */
   border-radius: 10px;
   overflow: hidden;
+  font-size: 15px;
 }
 
 .data-table thead th {
   background-color: #2b2b2b;
   color: #ffffff;
   padding: 12px;
+  text-align: left;
+}
+
+.data-table tbody td {
+  padding: 10px;
+  border-bottom: 1px solid #333;
+  color: #f1f1f1 !important; /* Force white text even if Bootstrap overrides */
 }
 
 .data-table tbody tr:hover {
-  background-color: #2a2a2a;
+  background-color: #333333;
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
 
 .icons-handle {
   display: flex;

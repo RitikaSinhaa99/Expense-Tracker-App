@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import Header from "../../components/Header";
 import { useNavigate } from "react-router-dom";
 import { Button, Modal, Form, Container } from "react-bootstrap";
-// import loading from "../../assets/loader.gif";
 import "./home.css";
 import { addTransaction, getTransactions } from "../../utils/ApiRequest";
 import axios from "axios";
@@ -15,6 +14,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import Analytics from "./Analytics";
+import { generateSmartInsight } from "../../utils/aiHelper"; // 👈 added import
 
 const Home = () => {
   const navigate = useNavigate();
@@ -29,6 +29,7 @@ const Home = () => {
     progress: undefined,
     theme: "dark",
   };
+
   const [cUser, setcUser] = useState();
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -39,15 +40,10 @@ const Home = () => {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [view, setView] = useState("table");
+  const [smartTip, setSmartTip] = useState(""); // 👈 AI insight state
 
-  const handleStartChange = (date) => {
-    setStartDate(date);
-  };
-
-  const handleEndChange = (date) => {
-    setEndDate(date);
-  };
-
+  const handleStartChange = (date) => setStartDate(date);
+  const handleEndChange = (date) => setEndDate(date);
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
@@ -55,8 +51,6 @@ const Home = () => {
     const avatarFunc = async () => {
       if (localStorage.getItem("user")) {
         const user = JSON.parse(localStorage.getItem("user"));
-        console.log(user);
-
         if (user.isAvatarImageSet === false || user.avatarImage === "") {
           navigate("/setAvatar");
         }
@@ -66,7 +60,6 @@ const Home = () => {
         navigate("/login");
       }
     };
-
     avatarFunc();
   }, [navigate]);
 
@@ -83,39 +76,26 @@ const Home = () => {
     setValues({ ...values, [e.target.name]: e.target.value });
   };
 
-  const handleChangeFrequency = (e) => {
-    setFrequency(e.target.value);
-  };
-
-  const handleSetType = (e) => {
-    setType(e.target.value);
-  };
+  const handleChangeFrequency = (e) => setFrequency(e.target.value);
+  const handleSetType = (e) => setType(e.target.value);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const { title, amount, description, category, date, transactionType } = values;
 
-    const { title, amount, description, category, date, transactionType } =
-      values;
-
-    if (
-      !title ||
-      !amount ||
-      !description ||
-      !category ||
-      !date ||
-      !transactionType
-    ) {
+    if (!title || !amount || !description || !category || !date || !transactionType) {
       toast.error("Please enter all the fields", toastOptions);
+      return;
     }
-    setLoading(true);
 
+    setLoading(true);
     const { data } = await axios.post(addTransaction, {
-      title: title,
-      amount: amount,
-      description: description,
-      category: category,
-      date: date,
-      transactionType: transactionType,
+      title,
+      amount,
+      description,
+      category,
+      date,
+      transactionType,
       userId: cUser._id,
     });
 
@@ -137,53 +117,36 @@ const Home = () => {
     setFrequency("7");
   };
 
-
-  
-
-
   useEffect(() => {
-
     const fetchAllTransactions = async () => {
       try {
+        if (!cUser?._id) return;
         setLoading(true);
-        console.log(cUser._id, frequency, startDate, endDate, type);
         const { data } = await axios.post(getTransactions, {
           userId: cUser._id,
-          frequency: frequency,
-          startDate: startDate,
-          endDate: endDate,
-          type: type,
+          frequency,
+          startDate,
+          endDate,
+          type,
         });
-        console.log(data);
-  
         setTransactions(data.transactions);
-  
+        setSmartTip(generateSmartInsight(data.transactions)); // 👈 AI insight update
         setLoading(false);
       } catch (err) {
-        // toast.error("Error please Try again...", toastOptions);
         setLoading(false);
       }
     };
-
     fetchAllTransactions();
-  }, [refresh, frequency, endDate, type, startDate]);
+  }, [refresh, frequency, endDate, type, startDate, cUser]);
 
-  const handleTableClick = (e) => {
-    setView("table");
-  };
-
-  const handleChartClick = (e) => {
-    setView("chart");
-  };
+  const handleTableClick = () => setView("table");
+  const handleChartClick = () => setView("chart");
 
   return (
     <>
       <Header />
-
       {loading ? (
-        <>
-          <Spinner />
-        </>
+        <Spinner />
       ) : (
         <>
           <Container
@@ -208,7 +171,7 @@ const Home = () => {
               </div>
 
               <div className="text-white type">
-                <Form.Group className="mb-3" controlId="formSelectFrequency">
+                <Form.Group className="mb-3" controlId="formSelectType">
                   <Form.Label>Type</Form.Label>
                   <Form.Select
                     name="type"
@@ -226,16 +189,12 @@ const Home = () => {
                 <FormatListBulletedIcon
                   sx={{ cursor: "pointer" }}
                   onClick={handleTableClick}
-                  className={`${
-                    view === "table" ? "iconActive" : "iconDeactive"
-                  }`}
+                  className={view === "table" ? "iconActive" : "iconDeactive"}
                 />
                 <BarChartIcon
                   sx={{ cursor: "pointer" }}
                   onClick={handleChartClick}
-                  className={`${
-                    view === "chart" ? "iconActive" : "iconDeactive"
-                  }`}
+                  className={view === "chart" ? "iconActive" : "iconDeactive"}
                 />
               </div>
 
@@ -258,7 +217,7 @@ const Home = () => {
                           name="title"
                           type="text"
                           placeholder="Enter Transaction Name"
-                          value={values.name}
+                          value={values.title}
                           onChange={handleChange}
                         />
                       </Form.Group>
@@ -274,7 +233,7 @@ const Home = () => {
                         />
                       </Form.Group>
 
-                      <Form.Group className="mb-3" controlId="formSelect">
+                      <Form.Group className="mb-3" controlId="formSelectCategory">
                         <Form.Label>Category</Form.Label>
                         <Form.Select
                           name="category"
@@ -306,7 +265,7 @@ const Home = () => {
                         />
                       </Form.Group>
 
-                      <Form.Group className="mb-3" controlId="formSelect1">
+                      <Form.Group className="mb-3" controlId="formSelectType">
                         <Form.Label>Transaction Type</Form.Label>
                         <Form.Select
                           name="transactionType"
@@ -328,8 +287,6 @@ const Home = () => {
                           onChange={handleChange}
                         />
                       </Form.Group>
-
-                      {/* Add more form inputs as needed */}
                     </Form>
                   </Modal.Body>
                   <Modal.Footer>
@@ -343,44 +300,35 @@ const Home = () => {
                 </Modal>
               </div>
             </div>
-            <br style={{ color: "white" }}></br>
 
-            {frequency === "custom" ? (
-              <>
-                <div className="date">
-                  <div className="form-group">
-                    <label htmlFor="startDate" className="text-white">
-                      Start Date:
-                    </label>
-                    <div>
-                      <DatePicker
-                        selected={startDate}
-                        onChange={handleStartChange}
-                        selectsStart
-                        startDate={startDate}
-                        endDate={endDate}
-                      />
-                    </div>
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="endDate" className="text-white">
-                      End Date:
-                    </label>
-                    <div>
-                      <DatePicker
-                        selected={endDate}
-                        onChange={handleEndChange}
-                        selectsEnd
-                        startDate={startDate}
-                        endDate={endDate}
-                        minDate={startDate}
-                      />
-                    </div>
+            {frequency === "custom" && (
+              <div className="date">
+                <div className="form-group">
+                  <label htmlFor="startDate" className="text-white">Start Date:</label>
+                  <div>
+                    <DatePicker
+                      selected={startDate}
+                      onChange={handleStartChange}
+                      selectsStart
+                      startDate={startDate}
+                      endDate={endDate}
+                    />
                   </div>
                 </div>
-              </>
-            ) : (
-              <></>
+                <div className="form-group">
+                  <label htmlFor="endDate" className="text-white">End Date:</label>
+                  <div>
+                    <DatePicker
+                      selected={endDate}
+                      onChange={handleEndChange}
+                      selectsEnd
+                      startDate={startDate}
+                      endDate={endDate}
+                      minDate={startDate}
+                    />
+                  </div>
+                </div>
+              </div>
             )}
 
             <div className="containerBtn">
@@ -388,14 +336,25 @@ const Home = () => {
                 Reset Filter
               </Button>
             </div>
+
+            {/* 🧠 AI Smart Insight Card */}
+            <div
+              style={{
+                background: "rgba(255,255,255,0.1)",
+                padding: "12px 20px",
+                borderRadius: "10px",
+                color: "white",
+                marginBottom: "20px",
+                fontStyle: "italic",
+              }}
+            >
+              🤖 <strong>Smart Insight:</strong> {smartTip}
+            </div>
+
             {view === "table" ? (
-              <>
-                <TableData data={transactions} user={cUser} />
-              </>
+              <TableData data={transactions} user={cUser} />
             ) : (
-              <>
-                <Analytics transactions={transactions} user={cUser} />
-              </>
+              <Analytics transactions={transactions} user={cUser} />
             )}
             <ToastContainer />
           </Container>
